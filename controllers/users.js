@@ -36,7 +36,9 @@ const signup = async (req, res, next) => {
       });
     }
     const newUser = await Users.create(req.body);
-    const { id, name, email, subscription, avatarURL, verifyToken } = newUser;
+
+    const { id, name, email, subscription, avatarURL, verifyToken, verify } =
+      newUser;
     try {
       const emailService = new EmailService(
         process.env.NODE_ENV,
@@ -57,6 +59,7 @@ const signup = async (req, res, next) => {
           email,
           subscription,
           avatarURL,
+          verify,
         },
       },
     });
@@ -69,6 +72,7 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await Users.findByEmail(email);
+
     const isValidPassword = await user?.validPassword(password); // .validPassword() static method schema userSchema
 
     if (!user || !isValidPassword) {
@@ -90,7 +94,7 @@ const login = async (req, res, next) => {
     const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: '3h' });
     await Users.updateToken(user.id, token);
 
-    const { id, name, subscription, avatarURL } = user;
+    const { id, name, subscription, avatarURL, verify } = user;
 
     return res.status(HttpCode.OK).json({
       status: 'success ',
@@ -103,6 +107,7 @@ const login = async (req, res, next) => {
           email,
           subscription,
           avatarURL,
+          verify,
         },
       },
     });
@@ -125,7 +130,7 @@ const current = async (req, res, next) => {
   try {
     //  const userId = req.user.id;
     // const { name, email, subscription } = await Users.findById(userId);
-    const { name, email, subscription, avatarURL } = req.user;
+    const { name, email, subscription, avatarURL, verify } = req.user;
     return res.status(HttpCode.OK).json({
       status: 'success ',
       code: HttpCode.OK,
@@ -134,6 +139,7 @@ const current = async (req, res, next) => {
         email,
         subscription,
         avatarURL,
+        verify,
       },
     });
   } catch (error) {
@@ -226,8 +232,8 @@ const repeatSendEmailVerify = async (req, res, next) => {
       try {
         const emailService = new EmailService(
           process.env.NODE_ENV,
-          // new CreateSenderSendgrid(),
-          new CreateSenderNodemailer(),
+          new CreateSenderSendgrid(),
+          // new CreateSenderNodemailer(),
         );
         await emailService.sendVerifyPasswordEmail(verifyToken, email, name);
         return res.status(HttpCode.OK).json({

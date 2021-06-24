@@ -5,18 +5,16 @@ class EmailService {
     const mailGenerator = new Mailgen({
       theme: 'salted',
       product: {
-        name: 'System Contacts',
+        name: 'Phonebook',
         link: this.link,
       },
     });
     const email = {
       body: {
         name,
-        intro:
-          "Welcome to System Contacts! We're very excited to have you on board.",
+        intro: "Welcome to Phonebook! We're very excited to have you on board.",
         action: {
-          instructions:
-            'To get started with System Contacts, please click here:',
+          instructions: 'To get started with Phonebook, please click here:',
           button: {
             color: '#22BC66', // Optional action button color
             text: 'Confirm your account',
